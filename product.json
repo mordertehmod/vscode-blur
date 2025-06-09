@@ -87,5 +87,578 @@
 				"publisherDisplayName": "Microsoft"
 			}
 		}
-	]
+	],
+	"extensionEnabledApiProposals": {
+		"ms-azuretools.vscode-dev-azurecloudshell": [
+			"contribEditSessions"
+		],
+		"ms-vscode.vscode-selfhost-test-provider": [
+			"testObserver",
+			"testRelatedCode"
+		],
+		"VisualStudioExptTeam.vscodeintellicode-completions": [
+			"inlineCompletionsAdditions"
+		],
+		"ms-vsliveshare.vsliveshare": [
+			"contribMenuBarHome",
+			"contribShareMenu",
+			"contribStatusBarItems",
+			"diffCommand",
+			"documentFiltersExclusive",
+			"fileSearchProvider",
+			"findTextInFiles",
+			"notebookCellExecutionState",
+			"notebookLiveShare",
+			"terminalDimensions",
+			"terminalDataWriteEvent",
+			"textSearchProvider"
+		],
+		"ms-vscode.js-debug": [
+			"portsAttributes",
+			"findTextInFiles",
+			"workspaceTrust",
+			"tunnels"
+		],
+		"ms-toolsai.vscode-ai-remote": [
+			"resolvers"
+		],
+		"ms-python.python": [
+			"codeActionAI",
+			"contribEditorContentMenu",
+			"quickPickSortByLabel",
+			"portsAttributes",
+			"testObserver",
+			"quickPickItemTooltip",
+			"terminalDataWriteEvent",
+			"terminalExecuteCommandEvent",
+			"notebookReplDocument",
+			"notebookVariableProvider",
+			"terminalShellEnv"
+		],
+		"ms-python.vscode-python-envs": [
+			"terminalShellEnv"
+		],
+		"ms-dotnettools.dotnet-interactive-vscode": [
+			"notebookMessaging"
+		],
+		"GitHub.codespaces": [
+			"contribEditSessions",
+			"contribMenuBarHome",
+			"contribRemoteHelp",
+			"contribViewsRemote",
+			"resolvers",
+			"tunnels",
+			"terminalDataWriteEvent",
+			"treeViewReveal",
+			"notebookKernelSource"
+		],
+		"ms-vscode.azure-repos": [
+			"extensionRuntime",
+			"fileSearchProvider",
+			"textSearchProvider"
+		],
+		"ms-vscode.remote-repositories": [
+			"canonicalUriProvider",
+			"contribEditSessions",
+			"contribRemoteHelp",
+			"contribMenuBarHome",
+			"contribViewsRemote",
+			"contribViewsWelcome",
+			"contribShareMenu",
+			"documentFiltersExclusive",
+			"editSessionIdentityProvider",
+			"extensionRuntime",
+			"fileSearchProvider",
+			"quickPickSortByLabel",
+			"workspaceTrust",
+			"shareProvider",
+			"scmActionButton",
+			"scmSelectedProvider",
+			"scmValidation",
+			"textSearchProvider",
+			"timeline"
+		],
+		"ms-vscode-remote.remote-wsl": [
+			"resolvers",
+			"contribRemoteHelp",
+			"contribViewsRemote",
+			"telemetry"
+		],
+		"ms-vscode-remote.remote-ssh": [
+			"resolvers",
+			"tunnels",
+			"terminalDataWriteEvent",
+			"contribRemoteHelp",
+			"contribViewsRemote",
+			"telemetry"
+		],
+		"ms-vscode.remote-server": [
+			"resolvers",
+			"tunnels",
+			"contribViewsWelcome"
+		],
+		"ms-vscode.remote-explorer": [
+			"contribRemoteHelp",
+			"contribViewsRemote",
+			"extensionsAny"
+		],
+		"ms-vscode-remote.remote-containers": [
+			"contribEditSessions",
+			"resolvers",
+			"portsAttributes",
+			"tunnels",
+			"workspaceTrust",
+			"terminalDimensions",
+			"contribRemoteHelp",
+			"contribViewsRemote"
+		],
+		"ms-vscode.js-debug-nightly": [
+			"portsAttributes",
+			"findTextInFiles",
+			"workspaceTrust",
+			"tunnels"
+		],
+		"ms-vscode.lsif-browser": [
+			"documentFiltersExclusive"
+		],
+		"ms-vscode.vscode-speech": [
+			"speech"
+		],
+		"GitHub.vscode-pull-request-github": [
+			"activeComment",
+			"codiconDecoration",
+			"codeActionRanges",
+			"commentingRangeHint",
+			"commentReactor",
+			"commentReveal",
+			"commentThreadApplicability",
+			"contribAccessibilityHelpContent",
+			"contribCommentEditorActionsMenu",
+			"contribCommentPeekContext",
+			"contribCommentThreadAdditionalMenu",
+			"contribCommentsViewThreadMenus",
+			"contribEditorContentMenu",
+			"contribMultiDiffEditorMenus",
+			"contribShareMenu",
+			"diffCommand",
+			"quickDiffProvider",
+			"shareProvider",
+			"tabInputTextMerge",
+			"tokenInformation",
+			"treeViewMarkdownMessage"
+		],
+		"GitHub.copilot": [
+			"inlineCompletionsAdditions"
+		],
+		"GitHub.copilot-nightly": [
+			"inlineCompletionsAdditions"
+		],
+		"GitHub.copilot-chat": [
+			"interactive",
+			"terminalDataWriteEvent",
+			"terminalExecuteCommandEvent",
+			"terminalSelection",
+			"terminalQuickFixProvider",
+			"chatParticipantAdditions",
+			"defaultChatParticipant",
+			"embeddings",
+			"chatEditing",
+			"chatProvider",
+			"mappedEditsProvider",
+			"aiRelatedInformation",
+			"aiSettingsSearch",
+			"codeActionAI",
+			"findTextInFiles",
+			"findTextInFiles2",
+			"textSearchProvider",
+			"textSearchProvider2",
+			"activeComment",
+			"commentReveal",
+			"contribSourceControlInputBoxMenu",
+			"contribCommentEditorActionsMenu",
+			"contribCommentThreadAdditionalMenu",
+			"contribCommentsViewThreadMenus",
+			"newSymbolNamesProvider",
+			"findFiles2",
+			"chatReferenceDiagnostic",
+			"extensionsAny",
+			"authLearnMore",
+			"testObserver",
+			"aiTextSearchProvider",
+			"documentFiltersExclusive",
+			"chatParticipantPrivate",
+			"contribDebugCreateConfiguration",
+			"inlineEdit",
+			"inlineCompletionsAdditions",
+			"chatReferenceBinaryData",
+			"languageModelSystem",
+			"languageModelCapabilities",
+			"languageModelDataPart",
+			"chatStatusItem",
+			"taskProblemMatcherStatus"
+		],
+		"GitHub.remotehub": [
+			"contribRemoteHelp",
+			"contribMenuBarHome",
+			"contribViewsRemote",
+			"contribViewsWelcome",
+			"documentFiltersExclusive",
+			"extensionRuntime",
+			"fileSearchProvider",
+			"quickPickSortByLabel",
+			"workspaceTrust",
+			"scmSelectedProvider",
+			"scmValidation",
+			"textSearchProvider",
+			"timeline"
+		],
+		"ms-python.gather": [
+			"notebookCellExecutionState"
+		],
+		"ms-python.vscode-pylance": [
+			"mcpConfigurationProvider",
+			"terminalShellEnv"
+		],
+		"ms-python.debugpy": [
+			"contribViewsWelcome",
+			"debugVisualization",
+			"portsAttributes"
+		],
+		"ms-toolsai.jupyter-renderers": [
+			"contribNotebookStaticPreloads"
+		],
+		"ms-toolsai.jupyter": [
+			"notebookDeprecated",
+			"notebookMessaging",
+			"notebookMime",
+			"portsAttributes",
+			"quickPickSortByLabel",
+			"notebookKernelSource",
+			"interactiveWindow",
+			"notebookControllerAffinityHidden",
+			"contribNotebookStaticPreloads",
+			"quickPickItemTooltip",
+			"notebookExecution",
+			"notebookCellExecution",
+			"notebookVariableProvider",
+			"notebookReplDocument"
+		],
+		"donjayamanne.kusto": [
+			"notebookVariableProvider"
+		],
+		"ms-toolsai.tensorboard": [
+			"portsAttributes"
+		],
+		"dbaeumer.vscode-eslint": [],
+		"ms-vscode.azure-sphere-tools-ui": [
+			"tunnels"
+		],
+		"ms-azuretools.vscode-azureappservice": [
+			"terminalDataWriteEvent"
+		],
+		"ms-vscode.anycode": [
+			"extensionsAny"
+		],
+		"ms-vscode.cpptools": [
+			"terminalDataWriteEvent",
+			"chatParticipantAdditions"
+		],
+		"vscjava.vscode-java-pack": [],
+		"ms-dotnettools.csdevkit": [
+			"inlineCompletionsAdditions"
+		],
+		"ms-dotnettools.vscodeintellicode-csharp": [
+			"inlineCompletionsAdditions"
+		],
+		"microsoft-IsvExpTools.powerplatform-vscode": [
+			"fileSearchProvider",
+			"textSearchProvider"
+		],
+		"microsoft-IsvExpTools.powerplatform-vscode-preview": [
+			"fileSearchProvider",
+			"textSearchProvider"
+		],
+		"TeamsDevApp.ms-teams-vscode-extension": [
+			"chatParticipantAdditions",
+			"languageModelSystem"
+		],
+		"ms-toolsai.datawrangler": [],
+		"ms-vscode.vscode-commander": [],
+		"ms-vscode.vscode-websearchforcopilot": [],
+		"ms-vscode.vscode-copilot-vision": [
+			"chatReferenceBinaryData",
+			"codeActionAI"
+		],
+		"ms-autodev.vscode-autodev": [
+			"chatParticipantAdditions"
+		]
+	},
+	"extensionKeywords": {
+		"md": [
+			"Markdown"
+		],
+		"js": [
+			"JavaScript"
+		],
+		"jsx": [
+			"JavaScript"
+		],
+		"es6": [
+			"JavaScript"
+		],
+		"html": [
+			"Html"
+		],
+		"ts": [
+			"TypeScript"
+		],
+		"tsx": [
+			"TypeScript"
+		],
+		"css": [
+			"CSS"
+		],
+		"scss": [
+			"SASS"
+		],
+		"txt": [
+			"Text"
+		],
+		"php": [
+			"PHP"
+		],
+		"php3": [
+			"PHP"
+		],
+		"php4": [
+			"PHP"
+		],
+		"ph3": [
+			"PHP"
+		],
+		"ph4": [
+			"PHP"
+		],
+		"xml": [
+			"XML"
+		],
+		"py": [
+			"Python"
+		],
+		"pyc": [
+			"Python"
+		],
+		"pyd": [
+			"Python"
+		],
+		"pyo": [
+			"Python"
+		],
+		"pyw": [
+			"Python"
+		],
+		"pyz": [
+			"Python"
+		],
+		"java": [
+			"Java"
+		],
+		"class": [
+			"Java"
+		],
+		"jar": [
+			"Java"
+		],
+		"c": [
+			"c",
+			"objective c",
+			"objective-c"
+		],
+		"m": [
+			"objective c",
+			"objective-c"
+		],
+		"mm": [
+			"objective c",
+			"objective-c"
+		],
+		"cpp": [
+			"cpp",
+			"c plus plus",
+			"c",
+			"c++"
+		],
+		"cc": [
+			"cpp",
+			"c plus plus",
+			"c",
+			"c++"
+		],
+		"cxx": [
+			"cpp",
+			"c plus plus",
+			"c++"
+		],
+		"hh": [
+			"cpp",
+			"c plus plus",
+			"c++"
+		],
+		"hpp": [
+			"cpp",
+			"c++"
+		],
+		"h": [
+			"cpp",
+			"c plus plus",
+			"c++",
+			"c",
+			"objective c",
+			"objective-c"
+		],
+		"sql": [
+			"sql"
+		],
+		"sh": [
+			"bash"
+		],
+		"bash": [
+			"bash"
+		],
+		"zsh": [
+			"bash",
+			"zshell"
+		],
+		"cs": [
+			"c#",
+			"csharp"
+		],
+		"csproj": [
+			"c#",
+			"csharp"
+		],
+		"sln": [
+			"c#",
+			"csharp"
+		],
+		"go": [
+			"go"
+		],
+		"sty": [
+			"latex"
+		],
+		"tex": [
+			"latex"
+		],
+		"ps": [
+			"powershell"
+		],
+		"ps1": [
+			"powershell"
+		],
+		"rs": [
+			"rust"
+		],
+		"rslib": [
+			"rust"
+		],
+		"hs": [
+			"haskell"
+		],
+		"lhs": [
+			"haskell"
+		],
+		"scm": [
+			"scheme"
+		],
+		"ss": [
+			"scheme"
+		],
+		"clj": [
+			"clojure"
+		],
+		"cljs": [
+			"clojure"
+		],
+		"cljc": [
+			"clojure"
+		],
+		"edn": [
+			"clojure"
+		],
+		"erl": [
+			"erlang"
+		],
+		"hrl": [
+			"erlang"
+		],
+		"scala": [
+			"scala"
+		],
+		"sc": [
+			"scala"
+		],
+		"pl": [
+			"perl"
+		],
+		"pm": [
+			"perl"
+		],
+		"t": [
+			"perl"
+		],
+		"pod": [
+			"perl"
+		],
+		"groovy": [
+			"groovy"
+		],
+		"swift": [
+			"swift"
+		],
+		"rb": [
+			"ruby"
+		],
+		"rbw": [
+			"ruby"
+		],
+		"jl": [
+			"julia"
+		],
+		"f": [
+			"fortran"
+		],
+		"for": [
+			"fortran"
+		],
+		"f90": [
+			"fortran"
+		],
+		"f95": [
+			"fortran"
+		],
+		"coffee": [
+			"CoffeeScript"
+		],
+		"litcoffee": [
+			"CoffeeScript"
+		],
+		"yaml": [
+			"yaml"
+		],
+		"yml": [
+			"yaml"
+		],
+		"dart": [
+			"dart"
+		],
+		"json": [
+			"json"
+		]
+	},
+	"enableTelemetry": false,
+	"date": "2025-06-02T13:30:54.273Z",
+	"commit": "258e40fedc6cb8edf399a463ce3a9d32e7e1f6f3",
+	"version": "1.100.3",
+	"quality": "stable"
 }
