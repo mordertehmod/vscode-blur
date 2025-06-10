@@ -124,8 +124,20 @@ export function defaultBrowserWindowOptions(accessor: ServicesAccessor, windowSt
 	const windowsMaterial = blurSettings?.windowsMaterial ?? WindowsMaterial.MICA;
 	const macOSVibrancy = blurSettings?.macOSVibrancy ?? MacOSVibrancy.SIDEBAR;
 
+	const getTransparentThemeColor = () => {
+		const themeColor = themeMainService.getBackgroundColor().toString();
+		if (themeColor.startsWith('#')) {
+			const hex = themeColor.slice(1);
+			const r = parseInt(hex.substring(0, 2), 16);
+			const g = parseInt(hex.substring(2, 4), 16);
+			const b = parseInt(hex.substring(4, 6), 16);
+			return `rgba(${r}, ${g}, ${b}, 0.5)`;
+		}
+		return themeColor;
+	};
+
 	const options: electron.BrowserWindowConstructorOptions & { experimentalDarkMode: boolean } = {
-		backgroundColor: enableBlur ? themeMainService.getBackgroundColor() : themeMainService.getBackgroundColor(),
+		backgroundColor: enableBlur ? getTransparentThemeColor() : themeMainService.getBackgroundColor().toString(),
 		minWidth: WindowMinimumSize.WIDTH,
 		minHeight: WindowMinimumSize.HEIGHT,
 		title: productService.nameLong,
@@ -152,18 +164,14 @@ export function defaultBrowserWindowOptions(accessor: ServicesAccessor, windowSt
 	};
 
 	if (enableBlur) {
+		options.transparent = true;
+		options.opacity = .85;
 		if (isWindows) {
 			if (windowsMaterial !== WindowsMaterial.NONE) {
 				options.backgroundMaterial = windowsMaterial;
-			} else {
-				options.transparent = true;
-				options.backgroundColor = '#00000000';
 			}
 		} else if (isMacintosh) {
 			options.vibrancy = macOSVibrancy;
-		} else {
-			options.transparent = true;
-			options.backgroundColor = '#00000000';
 		}
 	}
 

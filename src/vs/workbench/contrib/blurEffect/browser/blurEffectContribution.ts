@@ -51,11 +51,7 @@ export class BlurEffectContribution extends Disposable implements IWorkbenchCont
 				const blurRule = `backdrop-filter: blur(${radius}px);`;
 				const rules = new Set<string>();
 
-				// Use a simpler approach: Apply blur to the main workbench, but exclude dropdown containers
-				// This avoids stacking context issues while still providing the blur effect
-				
-				// Apply blur to the workbench background using ::before pseudo-element
-				// This creates a backdrop layer that doesn't interfere with dropdown z-index
+
 				rules.add(`
 .monaco-workbench::before {
 	content: '';
@@ -68,12 +64,10 @@ export class BlurEffectContribution extends Disposable implements IWorkbenchCont
 	pointer-events: none;
 	z-index: -1;
 }`);
-				
-				// Apply blur to individual parts that don't contain dropdowns
+
 				rules.add(`.monaco-workbench .part.editor > .content { ${blurRule} }`);
 				rules.add(`.monaco-workbench .part.statusbar > .content { ${blurRule} }`);
-				
-				// Apply blur to overlay elements that are safe (high z-index)
+
 				rules.add(`.quick-input-widget { ${blurRule} }`);
 
 				cssTextContent = [...rules].join('\n');
