@@ -210,10 +210,43 @@ export interface IWindowSettings {
 	readonly clickThroughInactive: boolean;
 	readonly newWindowProfile: string;
 	readonly density: IDensitySettings;
+	readonly blur?: IBlurSettings;
 }
 
 export interface IDensitySettings {
 	readonly editorTabHeight: 'default' | 'compact';
+}
+
+export const enum WindowsMaterial {
+	NONE = 'none',
+	AUTO = 'auto',
+	MICA = 'mica',
+	ACRYLIC = 'acrylic',
+	TABBED = 'tabbed'
+}
+
+export const enum MacOSVibrancy {
+	TITLEBAR = 'titlebar',
+	SELECTION = 'selection',
+	MENU = 'menu',
+	POPOVER = 'popover',
+	SIDEBAR = 'sidebar',
+	HEADER = 'header',
+	SHEET = 'sheet',
+	WINDOW = 'window',
+	HUD = 'hud',
+	FULLSCREEN_UI = 'fullscreen-ui',
+	TOOLTIP = 'tooltip',
+	CONTENT = 'content',
+	UNDER_WINDOW = 'under-window',
+	UNDER_PAGE = 'under-page'
+}
+
+export interface IBlurSettings {
+	readonly enabled: boolean;
+	readonly radius: number;
+	readonly macOSVibrancy: MacOSVibrancy;
+	readonly windowsMaterial: WindowsMaterial;
 }
 
 export const enum TitleBarSetting {

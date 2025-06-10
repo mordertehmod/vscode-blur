@@ -398,6 +398,9 @@ import './contrib/bracketPairColorizer2Telemetry/browser/bracketPairColorizer2Te
 // Accessibility
 import './contrib/accessibility/browser/accessibility.contribution.js';
 
+// Blur Effect
+import './contrib/blurEffect/browser/blurEffect.contribution.js';
+
 // Share
 import './contrib/share/browser/share.contribution.js';
 

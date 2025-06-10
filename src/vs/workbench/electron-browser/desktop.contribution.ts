@@ -308,6 +308,63 @@ import { registerWorkbenchContribution2, WorkbenchPhase } from '../common/contri
 				'scope': ConfigurationScope.APPLICATION,
 				'description': localize('window.clickThroughInactive', "If enabled, clicking on an inactive window will both activate the window and trigger the element under the mouse if it is clickable. If disabled, clicking anywhere on an inactive window will activate it only and a second click is required on the element."),
 				'included': isMacintosh
+			},
+			'window.blur.enabled': {
+				'type': 'boolean',
+				'default': false,
+				'scope': ConfigurationScope.APPLICATION,
+				'description': localize('window.blur.enabled', "Enable window blur/transparency effects. Changes require a full restart to apply."),
+				'order': 20
+			},
+			'window.blur.radius': {
+				'type': 'number',
+				'default': 10,
+				'minimum': 5,
+				'maximum': 50,
+				'scope': ConfigurationScope.APPLICATION,
+				'description': localize('window.blur.radius', "Controls the blur radius in pixels for CSS backdrop-filter on systems that don't support native blur. Changes require a restart."),
+				'order': 21
+			},
+			'window.blur.windowsMaterial': {
+				'type': 'string',
+				'enum': ['none', 'auto', 'mica', 'acrylic', 'tabbed'],
+				'enumDescriptions': [
+					localize('window.blur.windowsMaterial.none', "Disable native Windows blur effects and use CSS backdrop-filter instead"),
+					localize('window.blur.windowsMaterial.auto', "Let Windows choose the appropriate material"),
+					localize('window.blur.windowsMaterial.mica', "Use Windows 11 Mica material effect"),
+					localize('window.blur.windowsMaterial.acrylic', "Use Windows 11 Acrylic material effect"),
+					localize('window.blur.windowsMaterial.tabbed', "Use Windows 11 Tabbed material effect")
+				],
+				'default': 'mica',
+				'scope': ConfigurationScope.APPLICATION,
+				'description': localize('window.blur.windowsMaterial', "Controls the background material effect on Windows when blur is enabled. Changes require a restart."),
+				'included': isWindows,
+				'order': 22
+			},
+			'window.blur.macOSVibrancy': {
+				'type': 'string',
+				'enum': ['titlebar', 'selection', 'menu', 'popover', 'sidebar', 'header', 'sheet', 'window', 'hud', 'fullscreen-ui', 'tooltip', 'content', 'under-window', 'under-page'],
+				'enumDescriptions': [
+					localize('window.blur.macOSVibrancy.titlebar', "Titlebar vibrancy effect"),
+					localize('window.blur.macOSVibrancy.selection', "Selection vibrancy effect"),
+					localize('window.blur.macOSVibrancy.menu', "Menu vibrancy effect"),
+					localize('window.blur.macOSVibrancy.popover', "Popover vibrancy effect"),
+					localize('window.blur.macOSVibrancy.sidebar', "Sidebar vibrancy effect"),
+					localize('window.blur.macOSVibrancy.header', "Header vibrancy effect"),
+					localize('window.blur.macOSVibrancy.sheet', "Sheet vibrancy effect"),
+					localize('window.blur.macOSVibrancy.window', "Window vibrancy effect"),
+					localize('window.blur.macOSVibrancy.hud', "HUD vibrancy effect"),
+					localize('window.blur.macOSVibrancy.fullscreen-ui', "Fullscreen UI vibrancy effect"),
+					localize('window.blur.macOSVibrancy.tooltip', "Tooltip vibrancy effect"),
+					localize('window.blur.macOSVibrancy.content', "Content vibrancy effect"),
+					localize('window.blur.macOSVibrancy.under-window', "Under window vibrancy effect"),
+					localize('window.blur.macOSVibrancy.under-page', "Under page vibrancy effect")
+				],
+				'default': 'sidebar',
+				'scope': ConfigurationScope.APPLICATION,
+				'description': localize('window.blur.macOSVibrancy', "Controls the vibrancy effect on macOS when blur is enabled. Changes require a restart."),
+				'included': isMacintosh,
+				'order': 23
 			}
 		}
 	});

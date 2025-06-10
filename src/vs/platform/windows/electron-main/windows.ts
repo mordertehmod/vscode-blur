@@ -17,7 +17,7 @@ import { ServicesAccessor, createDecorator } from '../../instantiation/common/in
 import { ILogService } from '../../log/common/log.js';
 import { IProductService } from '../../product/common/productService.js';
 import { IThemeMainService } from '../../theme/electron-main/themeMainService.js';
-import { IOpenEmptyWindowOptions, IWindowOpenable, IWindowSettings, TitlebarStyle, WindowMinimumSize, hasNativeTitlebar, useNativeFullScreen, useWindowControlsOverlay, zoomLevelToZoomFactor } from '../../window/common/window.js';
+import { IOpenEmptyWindowOptions, IWindowOpenable, IWindowSettings, TitlebarStyle, WindowMinimumSize, hasNativeTitlebar, useNativeFullScreen, useWindowControlsOverlay, zoomLevelToZoomFactor, WindowsMaterial, MacOSVibrancy } from '../../window/common/window.js';
 import { ICodeWindow, IWindowState, WindowMode, defaultWindowState } from '../../window/electron-main/window.js';
 
 export const IWindowsMainService = createDecorator<IWindowsMainService>('windowsMainService');
@@ -62,26 +62,12 @@ export interface IWindowsCountChangedEvent {
 }
 
 export const enum OpenContext {
-
-	// opening when running from the command line
 	CLI,
-
-	// macOS only: opening from the dock (also when opening files to a running instance from desktop)
 	DOCK,
-
-	// opening from the main application window
 	MENU,
-
-	// opening from a file or folder dialog
 	DIALOG,
-
-	// opening from the OS's UI
 	DESKTOP,
-
-	// opening through the API
 	API,
-
-	// opening from a protocol link
 	LINK
 }
 
@@ -133,8 +119,13 @@ export function defaultBrowserWindowOptions(accessor: ServicesAccessor, windowSt
 
 	const windowSettings = configurationService.getValue<IWindowSettings | undefined>('window');
 
+	const blurSettings = windowSettings?.blur;
+	const enableBlur = blurSettings?.enabled ?? false;
+	const windowsMaterial = blurSettings?.windowsMaterial ?? WindowsMaterial.MICA;
+	const macOSVibrancy = blurSettings?.macOSVibrancy ?? MacOSVibrancy.SIDEBAR;
+
 	const options: electron.BrowserWindowConstructorOptions & { experimentalDarkMode: boolean } = {
-		backgroundColor: themeMainService.getBackgroundColor(),
+		backgroundColor: enableBlur ? themeMainService.getBackgroundColor() : themeMainService.getBackgroundColor(),
 		minWidth: WindowMinimumSize.WIDTH,
 		minHeight: WindowMinimumSize.HEIGHT,
 		title: productService.nameLong,
@@ -159,6 +150,22 @@ export function defaultBrowserWindowOptions(accessor: ServicesAccessor, windowSt
 		},
 		experimentalDarkMode: true
 	};
+
+	if (enableBlur) {
+		if (isWindows) {
+			if (windowsMaterial !== WindowsMaterial.NONE) {
+				options.backgroundMaterial = windowsMaterial;
+			} else {
+				options.transparent = true;
+				options.backgroundColor = '#00000000';
+			}
+		} else if (isMacintosh) {
+			options.vibrancy = macOSVibrancy;
+		} else {
+			options.transparent = true;
+			options.backgroundColor = '#00000000';
+		}
+	}
 
 	if (isLinux) {
 		options.icon = join(environmentMainService.appRoot, 'resources/linux/code.png'); // always on Linux
