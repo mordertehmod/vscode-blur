@@ -52,16 +52,33 @@ export class BlurEffectContribution extends Disposable implements IWorkbenchCont
 				const rules = new Set<string>();
 
 
-				const transparentPixel = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+				const transparentPixel = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAQAAAAnOwc2AAAAEUlEQVR42mNkMGbAAIxDWRAA53ICCfFVYK4AAAAASUVORK5CYII=';
 
-				rules.add(`.monaco-workbench .part.titlebar { ${blurRule} background-image: url("${transparentPixel}") !important; }`);
-				rules.add(`.monaco-workbench .part.activitybar { ${blurRule} background-image: url("${transparentPixel}") !important; }`);
-				rules.add(`.monaco-workbench .part.sidebar { ${blurRule} background-image: url("${transparentPixel}") !important; }`);
-				rules.add(`.monaco-workbench .part.panel { ${blurRule} background-image: url("${transparentPixel}") !important; }`);
-				rules.add(`.monaco-workbench .part.statusbar { ${blurRule} background-image: url("${transparentPixel}") !important; }`);
-				rules.add(`.monaco-workbench .part.editor { ${blurRule} background-image: url("${transparentPixel}") !important; }`);
+				rules.add(`.monaco-workbench .part.titlebar { ${blurRule} background-image: url("${transparentPixel}"); background-repeat: repeat; !important; }`);
+				rules.add(`.monaco-workbench .part.activitybar { ${blurRule} background-image: url("${transparentPixel}"); background-repeat: repeat; !important; }`);
+				rules.add(`.monaco-workbench .part.sidebar { ${blurRule} background-image: url("${transparentPixel}"); background-repeat: repeat; !important; }`);
+				rules.add(`.monaco-workbench .part.panel { ${blurRule} background-image: url("${transparentPixel}"); background-repeat: repeat; !important; }`);
+				rules.add(`.monaco-workbench .part.statusbar { ${blurRule} background-image: url("${transparentPixel}"); background-repeat: repeat; !important; }`);
+				rules.add(`.monaco-workbench .part.editor { ${blurRule} background-image: url("${transparentPixel}"); background-repeat: repeat; !important; }`);
 
-				rules.add(`.quick-input-widget { ${blurRule} background-image: url("${transparentPixel}") !important; }`);
+
+				rules.add(`.monaco-workbench::before {
+								content: '';
+								position: fixed;
+								top: 0;
+								left: 0;
+								right: 0;
+								bottom: 0;
+								${blurRule}
+								background-image: url("${transparentPixel}");
+								background-repeat: repeat;
+								pointer-events: none;
+								z-index: -1;
+								!important;
+							}`
+				);
+
+				rules.add(`.quick-input-widget { ${blurRule} background-image: url("${transparentPixel}"); background-repeat: repeat; !important; }`);
 
 				cssTextContent = [...rules].join('\n');
 			}
