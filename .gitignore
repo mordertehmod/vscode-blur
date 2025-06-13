@@ -22,4 +22,5 @@ product.overrides.json
 *.snap.actual
 .vscode-test
 CLAUDE.md
+vibe/
 

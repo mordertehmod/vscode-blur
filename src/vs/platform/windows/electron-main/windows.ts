@@ -17,7 +17,7 @@ import { ServicesAccessor, createDecorator } from '../../instantiation/common/in
 import { ILogService } from '../../log/common/log.js';
 import { IProductService } from '../../product/common/productService.js';
 import { IThemeMainService } from '../../theme/electron-main/themeMainService.js';
-import { IOpenEmptyWindowOptions, IWindowOpenable, IWindowSettings, TitlebarStyle, WindowMinimumSize, hasNativeTitlebar, useNativeFullScreen, useWindowControlsOverlay, zoomLevelToZoomFactor, WindowsMaterial, MacOSVibrancy } from '../../window/common/window.js';
+import { IOpenEmptyWindowOptions, IWindowOpenable, IWindowSettings, TitlebarStyle, WindowMinimumSize, hasNativeTitlebar, useNativeFullScreen, useWindowControlsOverlay, zoomLevelToZoomFactor } from '../../window/common/window.js';
 import { ICodeWindow, IWindowState, WindowMode, defaultWindowState } from '../../window/electron-main/window.js';
 
 export const IWindowsMainService = createDecorator<IWindowsMainService>('windowsMainService');
@@ -119,61 +119,41 @@ export function defaultBrowserWindowOptions(accessor: ServicesAccessor, windowSt
 
 	const windowSettings = configurationService.getValue<IWindowSettings | undefined>('window');
 
-	const blurSettings = windowSettings?.blur;
-	const enableBlur = blurSettings?.enabled ?? false;
-	const windowsMaterial = blurSettings?.windowsMaterial ?? WindowsMaterial.MICA;
-	const macOSVibrancy = blurSettings?.macOSVibrancy ?? MacOSVibrancy.SIDEBAR;
-
-	const getTransparentThemeColor = () => {
-		const themeColor = themeMainService.getBackgroundColor().toString();
-		if (themeColor.startsWith('#')) {
-			const hex = themeColor.slice(1);
-			const r = parseInt(hex.substring(0, 2), 16);
-			const g = parseInt(hex.substring(2, 4), 16);
-			const b = parseInt(hex.substring(4, 6), 16);
-			return `rgba(${r}, ${g}, ${b}, 0.5)`;
-		}
-		return themeColor;
-	};
-
 	const options: electron.BrowserWindowConstructorOptions & { experimentalDarkMode: boolean } = {
-		backgroundColor: enableBlur ? getTransparentThemeColor() : themeMainService.getBackgroundColor().toString(),
+		// backgroundColor: enableBlur ? getTransparentThemeColor() : themeMainService.getBackgroundColor().toString(),
 		minWidth: WindowMinimumSize.WIDTH,
 		minHeight: WindowMinimumSize.HEIGHT,
 		title: productService.nameLong,
-		show: windowState.mode !== WindowMode.Maximized && windowState.mode !== WindowMode.Fullscreen, // reduce flicker by showing later
+		// show: windowState.mode !== WindowMode.Maximized && windowState.mode !== WindowMode.Fullscreen, // reduce flicker by showing later
 		x: windowState.x,
 		y: windowState.y,
 		width: windowState.width,
 		height: windowState.height,
+		center: true,
+		backgroundColor: '#00000000',
+		//  show: false,
+		//	autoHideMenuBar: true,
 		webPreferences: {
 			...webPreferences,
 			enableWebSQL: false,
 			spellcheck: false,
+			nodeIntegration: true,
+			contextIsolation: false, // we use node integration
+			sandbox: false, // we use node integration
+			webSecurity: false,
+			allowRunningInsecureContent: true,
 			zoomFactor: zoomLevelToZoomFactor(windowState.zoomLevel ?? windowSettings?.zoomLevel),
-			autoplayPolicy: 'user-gesture-required',
+			autoplayPolicy: 'no-user-gesture-required',
 			// Enable experimental css highlight api https://chromestatus.com/feature/5436441440026624
 			// Refs https://github.com/microsoft/vscode/issues/140098
 			enableBlinkFeatures: 'HighlightAPI',
-			sandbox: true,
+			//sandbox: true,
 			// TODO(deepak1556): Should be removed once migration is complete
 			// https://github.com/microsoft/vscode/issues/239228
 			enableDeprecatedPaste: true,
 		},
-		experimentalDarkMode: true
+		experimentalDarkMode: false
 	};
-
-	if (enableBlur) {
-		options.transparent = true;
-		options.opacity = .85;
-		if (isWindows) {
-			if (windowsMaterial !== WindowsMaterial.NONE) {
-				options.backgroundMaterial = windowsMaterial;
-			}
-		} else if (isMacintosh) {
-			options.vibrancy = macOSVibrancy;
-		}
-	}
 
 	if (isLinux) {
 		options.icon = join(environmentMainService.appRoot, 'resources/linux/code.png'); // always on Linux

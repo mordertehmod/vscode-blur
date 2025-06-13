@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+*  Copyright (c) Microsoft Corporation. All rights reserved.
+*  Licensed under the MIT License. See License.txt in the project root for license information.
+*--------------------------------------------------------------------------------------------*/
 
-import electron, { BrowserWindowConstructorOptions, Display, screen } from 'electron';
+import electron, { BrowserWindow, BrowserWindowConstructorOptions, Display, screen } from 'electron';
 import { DeferredPromise, RunOnceScheduler, timeout, Delayer } from '../../../base/common/async.js';
 import { CancellationToken } from '../../../base/common/cancellation.js';
 import { toErrorMessage } from '../../../base/common/errorMessage.js';
@@ -32,7 +32,7 @@ import { IApplicationStorageMainService, IStorageMainService } from '../../stora
 import { ITelemetryService } from '../../telemetry/common/telemetry.js';
 import { ThemeIcon } from '../../../base/common/themables.js';
 import { IThemeMainService } from '../../theme/electron-main/themeMainService.js';
-import { getMenuBarVisibility, IFolderToOpen, INativeWindowConfiguration, IWindowSettings, IWorkspaceToOpen, MenuBarVisibility, hasNativeTitlebar, useNativeFullScreen, useWindowControlsOverlay, DEFAULT_CUSTOM_TITLEBAR_HEIGHT, TitlebarStyle, MenuSettings } from '../../window/common/window.js';
+import { getMenuBarVisibility, IFolderToOpen, INativeWindowConfiguration, IWindowSettings, IWorkspaceToOpen, MenuBarVisibility, hasNativeTitlebar, useNativeFullScreen, useWindowControlsOverlay, DEFAULT_CUSTOM_TITLEBAR_HEIGHT, TitlebarStyle, MenuSettings, } from '../../window/common/window.js';
 import { defaultBrowserWindowOptions, getAllWindowsExcludingOffscreen, IWindowsMainService, OpenContext, WindowStateValidator } from './windows.js';
 import { ISingleFolderWorkspaceIdentifier, IWorkspaceIdentifier, isSingleFolderWorkspaceIdentifier, isWorkspaceIdentifier, toWorkspaceIdentifier } from '../../workspace/common/workspace.js';
 import { IWorkspacesManagementMainService } from '../../workspaces/electron-main/workspacesManagementMainService.js';
@@ -46,6 +46,12 @@ import { IInstantiationService } from '../../instantiation/common/instantiation.
 import { VSBuffer } from '../../../base/common/buffer.js';
 import { errorHandler } from '../../../base/common/errors.js';
 import { FocusMode } from '../../native/common/native.js';
+
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+
+const vibe = require('@pyke/vibe');
+
 
 export interface IWindowCreationOptions {
 	readonly state: IWindowState;
@@ -124,6 +130,25 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 		this._win = win;
 
 		// Window Events
+
+
+		if (isWindows) {
+			console.log('SetWin() - Windows check passed: ', isWindows);
+
+			try {
+				// Set the background color to transparent for the window
+				console.log('SetWin() - Current window color (before applying Effect): ', win.getBackgroundColor());
+				win.setBackgroundColor('#00000000');
+				console.log('SetWin() - Set window background color to transparent');
+
+				vibe.applyEffect(win, 'blurbehind');
+				console.log('SetWin() - Applied blurbehind effect');
+			}
+			catch (error) {
+				this.logService.error('SetWin() - Failed to apply DWM effect:', toErrorMessage(error));
+			}
+		}
+
 		this._register(Event.fromNodeEventEmitter(win, 'maximize')(() => {
 			if (isWindows && this.environmentMainService.enableRDPDisplayTracking && this._win) {
 				const [x, y] = this._win.getPosition();
@@ -352,7 +377,6 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 
 		win.focus();
 	}
-
 	//#region Window Control Overlays
 
 	private static readonly windowControlHeightStateStorageKey = 'windowControlHeight';
@@ -619,23 +643,93 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 			this.logService.trace('window#ctor: using window state', state);
 
 			const options = instantiationService.invokeFunction(defaultBrowserWindowOptions, this.windowState, undefined, {
-				preload: FileAccess.asFileUri('vs/base/parts/sandbox/electron-browser/preload.js').fsPath,
+				preload: FileAccess.asFileUri('vs/base/parts/sandbox/electron-browser/preload.js').fsPath, // This stops the vibe package from loading entirely, along with settings ANY properties on the window. Example: setting the background color to ANYTHING. HELP NEEDED HERE!
 				additionalArguments: [`--vscode-window-config=${this.configObjectUrl.resource.toString()}`],
 				v8CacheOptions: this.environmentMainService.useCodeCache ? 'bypassHeatCheck' : 'none',
 			});
 
 			// Create the browser window
 			mark('code/willCreateCodeBrowserWindow');
-			this._win = new electron.BrowserWindow(options);
+			this._win = new BrowserWindow(options);
 			mark('code/didCreateCodeBrowserWindow');
 
 			this._id = this._win.id;
 			this.setWin(this._win, options);
 
+			// debug window creation //
+			console.log('Current window color: ', this._win.getBackgroundColor());
+			console.log('Current window title: ', this._win.getTitle());
+			console.log('Current window children: \n', this._win.getChildWindows);
+
+			// Apply blur effect if enabled (TODO) //
+			/*
+			const windowSettings = this.configurationService.getValue<IWindowSettings | undefined>('window');
+			const blurSettings = windowSettings?.blur;
+			const enableBlur = blurSettings?.enabled ?? false;
+			const windowsMaterial = blurSettings?.windowsMaterial;
+
+			console.log("enableBlur: ", enableBlur, "windowsMaterial: ", windowsMaterial);
+
+			try {
+				if (enableBlur) {
+					console.log('enableBlur is true, applying blur effect');
+					if (isWindows) {
+						console.log('Platform is windows, applying DWM blur effect');
+						if (windowsMaterial == 'acrylic' && isWindows && enableBlur) {
+							try {
+								vibe.forceTheme(this._win, 'dark'); // Force dark theme for acrylic effect
+								console.log('Forced dark theme for acrylic effect');
+								this._win.setBackgroundColor('#00000000'); // Set the background color to transparent
+								console.log('set window background color to transparent for acrylic effect');
+								vibe.applyEffect(this._win, 'blurbehind');
+								console.log('Applied acrylic effect with color:', this.themeMainService.getBackgroundColor());
+							}
+							catch (error) {
+								console.log('Failed to apply acrylic effect:', toErrorMessage(error));
+							}
+						}
+						else if (windowsMaterial == 'mica') {
+							try {
+								this._win.setBackgroundColor('#00000000'); // Set the background color to transparent
+								vibe.applyEffect(this._win, 'mica');
+								console.log('Applied mica effect');
+							}
+							catch (error) {
+								console.log('Failed to apply mica effect:', toErrorMessage(error));
+							}
+						}
+						else {
+							console.log('Unknown windowsMaterial:', windowsMaterial, 'skipping blur effect');
+						}
+					}
+					else {
+						console.log('Platform is not windows, skipped applying blur effect using blurbehind');
+					}
+				}
+				else {
+					console.log('enableBlur is false, not applying blur effect');
+				}
+			}
+			catch (error) {
+				this.logService.error('Failed to even try to apply DWM effect:', toErrorMessage(error));
+			}
+
+			this._win.webContents.once('dom-ready', () => {
+				// Set the background color to solid #212121 after creating the window, because apparently unified-acrylic and
+				// blurbehind need the window to be created with 0 alpha to work (or at least on Windows 11 22H2).
+				this._win.setBackgroundColor('#212121');
+				console.log('set window background color to: #212121');
+				this._win.show();
+				console.log('showing window after dom-ready');
+			});*/
+
 			// Apply some state after window creation
 			this.applyState(this.windowState, hasMultipleDisplays);
 
+			console.log('DEBUG - window (this.win): ', this.win, 'window (this._win): ', this._win);
+
 			this._lastFocusTime = Date.now(); // since we show directly, we need to set the last focus time too
+
 		}
 		//#endregion
 
@@ -731,7 +825,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 
 		// Remember that we loaded
 		this._register(Event.fromNodeEventEmitter(this._win.webContents, 'did-finish-load')(() => {
-
+			this._win.show();
 			// Associate properties from the load request if provided
 			if (this.pendingLoadConfig) {
 				this._config = this.pendingLoadConfig;
@@ -1580,6 +1674,36 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 	matches(webContents: electron.WebContents): boolean {
 		return this._win?.webContents.id === webContents.id;
 	}
+
+	/*
+	private applyVibeEffects(win: electron.BrowserWindow): void {
+		try {
+			const windowSettings = this.configurationService.getValue<IWindowSettings | undefined>('window');
+			const blurSettings = windowSettings?.blur;
+			const enableBlur = blurSettings?.enabled ?? false;
+			const windowsMaterial = blurSettings?.windowsMaterial ?? WindowsMaterial.MICA;
+
+			if (enableBlur && windowsMaterial !== WindowsMaterial.NONE) {
+				// Get theme color for tinting (Windows 10 only)
+				const themeColor = this.themeMainService.getBackgroundColor().toString();
+
+				this.logService.info('Got theme color: ', themeColor);
+				this.logService.info('Window info: ', win);
+
+				// Apply vibe effect
+				const success = applyVibeEffect(win, windowsMaterial, themeColor);
+
+				if (success) {
+					this.logService.info(`Applied vibe effect: ${windowsMaterial}`);
+				} else {
+					this.logService.warn(`Failed to apply vibe effect: ${windowsMaterial}, using native blur`);
+				}
+			}
+		} catch (error) {
+			this.logService.error('Failed to apply vibe effects:', error);
+		}
+	}
+	*/
 
 	override dispose(): void {
 		super.dispose();

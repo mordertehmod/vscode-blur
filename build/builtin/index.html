@@ -1,45 +1,130 @@
-<!-- Copyright (C) Microsoft Corporation. All rights reserved. -->
-
 <!DOCTYPE html>
 <html>
+	<head>
+		<meta charset="utf-8">
+		<title>vibe demo 3</title>
+		<style>
+			* {
+				font-family: 'Segoe UI', sans-serif;
+			}
 
-<head>
-	<meta charset="utf-8" />
-	<title>Manage Built-in Extensions</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<script src="browser-main.js"></script>
-	<style>
-		body {
-			font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-			font-size: 10pt;
-		}
+			body {
+				margin: 0;
+			}
 
-		code {
-			font-family: 'Menlo', 'Courier New', 'Courier', monospace;
-		}
+			main {
+				width: 100vw;
+				height: 100vh;
 
-		ul {
-			padding-left: 1em;
-		}
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				flex-direction: column;
+			}
 
-		li {
-			list-style: none;
-			padding: 0.3em 0;
-		}
+			main > div {
+				padding: 10px;
+				max-width: 85vw;
 
-		label {
-			margin-right: 1em;
-		}
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				flex-direction: row;
+				flex-wrap: wrap;
+			}
 
-		form {
-			padding: 0.3em 0 0.3em 0.3em;
-		}
-	</style>
-</head>
+			button {
+				font-size: 14px;
+				color: black;
+				background-color: #fbfbfb;
+				padding: 10px 16px;
+				border: 1px solid #e7e7e7;
+				border-radius: 6px;
+				border-bottom-width: 0;
+				box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+				margin: 3px 4px;
+				min-width: 65px;
+				white-space: nowrap;
+				transition: background-color 0.25s var(--easing);
+			}
 
-<body>
-	<h1>Built-in Extensions</h1>
-	<div id="extensions"></div>
-</body>
+			button:hover {
+				background-color: #f6f6f6;
+			}
 
+			button:active {
+				background-color: #e7e7e7;
+			}
+
+			button.primary {
+				border: 1px solid #3f9fcf;
+				color: black;
+				background-color: #4cc2ff;
+			}
+
+			button.primary:hover {
+				background-color: #47b1e8;
+			}
+
+			button.primary:active {
+				color: #254453;
+				background-color: #42a1d2;
+			}
+
+			button#clear {
+				font-size: 12px;
+				margin-top: 16px;
+				padding: 7px 16px;
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<h1 style='margin-top:0;font-family:"Source Code Pro","SauceCodePro NF","Courier New",Courier,monospace'>@pyke/vibe</h1>
+			<p>Press the buttons to switch between effects.</p>
+			<div>
+				<button id='mica'>Mica</button>
+				<button id='acrylic'>Acrylic</button>
+				<button id='unified-acrylic'>Unified Acrylic</button>
+				<button id='blurbehind'>Blurbehind</button>
+			</div>
+			<button id='clear'>Clear effects</button>
+		</main>
+
+		<script>
+			const { ipcRenderer } = require('electron');
+
+			const buttons = [
+				'mica',
+				'acrylic',
+				'unified-acrylic',
+				'blurbehind'
+			];
+
+			for (const id of buttons) {
+				const el = document.getElementById(id);
+				el.addEventListener('click', () => {
+					for (const otherId of buttons)
+						if (otherId !== id) {
+							const otherEl = document.getElementById(otherId);
+							if (otherEl.classList.contains('primary'))
+								otherEl.classList.remove('primary');
+						}
+
+					el.classList.add('primary');
+					ipcRenderer.send('apply', id);
+				});
+			}
+
+			document.getElementById('clear').addEventListener('click', () => {
+				for (const otherId of buttons) {
+					const otherEl = document.getElementById(otherId);
+					if (otherEl.classList.contains('primary'))
+						otherEl.classList.remove('primary');
+				}
+
+				ipcRenderer.send('clear');
+			});
+		</script>
+	</body>
 </html>

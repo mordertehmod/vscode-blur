@@ -74,6 +74,11 @@ import { FileUserDataProvider } from '../../platform/userData/common/fileUserDat
 import { addUNCHostToAllowlist, getUNCHost } from '../../base/node/unc.js';
 import { ThemeMainService } from '../../platform/theme/electron-main/themeMainServiceImpl.js';
 
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+
+const vibe = require('@pyke/vibe');
+
 /**
  * The main VS Code entry point.
  *
@@ -98,6 +103,8 @@ class CodeMain {
 		// Set the error handler early enough so that we are not getting the
 		// default electron error dialog popping up
 		setUnexpectedErrorHandler(err => console.error(err));
+
+		vibe.setup(app);
 
 		// Create services
 		const [instantiationService, instanceEnvironment, environmentMainService, configurationService, stateMainService, bufferLogger, productService, userDataProfilesMainService] = this.createServices();
