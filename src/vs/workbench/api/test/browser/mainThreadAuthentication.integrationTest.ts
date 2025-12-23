@@ -26,7 +26,7 @@ import { TestActivityService, TestExtensionService, TestProductService, TestStor
 import { IBrowserWorkbenchEnvironmentService } from '../../../services/environment/browser/environmentService.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
 import { AuthenticationAccessService, IAuthenticationAccessService } from '../../../services/authentication/browser/authenticationAccessService.js';
-import { AuthenticationUsageService, IAuthenticationUsageService } from '../../../services/authentication/browser/authenticationUsageService.js';
+import { IAccountUsage, IAuthenticationUsageService } from '../../../services/authentication/browser/authenticationUsageService.js';
 import { AuthenticationExtensionsService } from '../../../services/authentication/browser/authenticationExtensionsService.js';
 import { ILogService, NullLogService } from '../../../../platform/log/common/log.js';
 import { IHostService } from '../../../services/host/browser/host.js';
@@ -39,6 +39,15 @@ import { DynamicAuthenticationProviderStorageService } from '../../../services/a
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 import { ServiceCollection } from '../../../../platform/instantiation/common/serviceCollection.js';
 import { SyncDescriptor } from '../../../../platform/instantiation/common/descriptors.js';
+
+class TestAuthUsageService implements IAuthenticationUsageService {
+	_serviceBrand: undefined;
+	initializeExtensionUsageCache(): Promise<void> { return Promise.resolve(); }
+	extensionUsesAuth(extensionId: string): Promise<boolean> { return Promise.resolve(false); }
+	readAccountUsages(providerId: string, accountName: string): IAccountUsage[] { return []; }
+	removeAccountUsage(providerId: string, accountName: string): void { }
+	addAccountUsage(providerId: string, accountName: string, scopes: ReadonlyArray<string>, extensionId: string, extensionName: string): void { }
+}
 
 suite('MainThreadAuthentication', () => {
 	const disposables = ensureNoDisposablesAreLeakedInTestSuite();
@@ -64,7 +73,7 @@ suite('MainThreadAuthentication', () => {
 		services.set(IUserActivityService, new SyncDescriptor(UserActivityService));
 		services.set(IAuthenticationAccessService, new SyncDescriptor(AuthenticationAccessService));
 		services.set(IAuthenticationService, new SyncDescriptor(AuthenticationService));
-		services.set(IAuthenticationUsageService, new SyncDescriptor(AuthenticationUsageService));
+		services.set(IAuthenticationUsageService, new SyncDescriptor(TestAuthUsageService));
 		services.set(IAuthenticationExtensionsService, new SyncDescriptor(AuthenticationExtensionsService));
 		instantiationService = disposables.add(new TestInstantiationService(services, undefined, undefined, true));
 
@@ -82,7 +91,11 @@ suite('MainThreadAuthentication', () => {
 
 	test('provider registration completes without errors', async () => {
 		// Test basic registration - this should complete without throwing
-		await mainThreadAuthentication.$registerAuthenticationProvider('test-provider', 'Test Provider', false);
+		await mainThreadAuthentication.$registerAuthenticationProvider({
+			id: 'test-provider',
+			label: 'Test Provider',
+			supportsMultipleAccounts: false
+		});
 
 		// Test unregistration - this should also complete without throwing
 		await mainThreadAuthentication.$unregisterAuthenticationProvider('test-provider');
@@ -103,16 +116,24 @@ suite('MainThreadAuthentication', () => {
 				return Promise.resolve();
 			},
 			$getSessions: () => Promise.resolve([]),
+			// eslint-disable-next-line local/code-no-any-casts
 			$createSession: () => Promise.resolve({} as any),
 			$removeSession: () => Promise.resolve(),
 			$onDidChangeAuthenticationSessions: () => Promise.resolve(),
 			$registerDynamicAuthProvider: () => Promise.resolve('test'),
-			$onDidChangeDynamicAuthProviderTokens: () => Promise.resolve()
+			$onDidChangeDynamicAuthProviderTokens: () => Promise.resolve(),
+			$getSessionsFromChallenges: () => Promise.resolve([]),
+			// eslint-disable-next-line local/code-no-any-casts
+			$createSessionFromChallenges: () => Promise.resolve({} as any),
 		};
 		rpcProtocol.set(ExtHostContext.ExtHostAuthentication, mockExtHost);
 
 		// Register a provider
-		await mainThreadAuthentication.$registerAuthenticationProvider('test-suppress', 'Test Suppress', false);
+		await mainThreadAuthentication.$registerAuthenticationProvider({
+			id: 'test-suppress',
+			label: 'Test Suppress',
+			supportsMultipleAccounts: false
+		});
 
 		// Reset the flag
 		unregisterEventFired = false;
@@ -129,9 +150,21 @@ suite('MainThreadAuthentication', () => {
 	test('concurrent provider registrations complete without errors', async () => {
 		// Register multiple providers simultaneously
 		const registrationPromises = [
-			mainThreadAuthentication.$registerAuthenticationProvider('concurrent-1', 'Concurrent 1', false),
-			mainThreadAuthentication.$registerAuthenticationProvider('concurrent-2', 'Concurrent 2', false),
-			mainThreadAuthentication.$registerAuthenticationProvider('concurrent-3', 'Concurrent 3', false)
+			mainThreadAuthentication.$registerAuthenticationProvider({
+				id: 'concurrent-1',
+				label: 'Concurrent 1',
+				supportsMultipleAccounts: false
+			}),
+			mainThreadAuthentication.$registerAuthenticationProvider({
+				id: 'concurrent-2',
+				label: 'Concurrent 2',
+				supportsMultipleAccounts: false
+			}),
+			mainThreadAuthentication.$registerAuthenticationProvider({
+				id: 'concurrent-3',
+				label: 'Concurrent 3',
+				supportsMultipleAccounts: false
+			})
 		];
 
 		await Promise.all(registrationPromises);

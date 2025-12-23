@@ -42,9 +42,9 @@ export interface IWindowsMainService {
 
 	openExistingWindow(window: ICodeWindow, openConfig: IOpenConfiguration): void;
 
-	sendToFocused(channel: string, ...args: any[]): void;
-	sendToOpeningWindow(channel: string, ...args: any[]): void;
-	sendToAll(channel: string, payload?: any, windowIdsToIgnore?: number[]): void;
+	sendToFocused(channel: string, ...args: unknown[]): void;
+	sendToOpeningWindow(channel: string, ...args: unknown[]): void;
+	sendToAll(channel: string, payload?: unknown, windowIdsToIgnore?: number[]): void;
 
 	getWindows(): ICodeWindow[];
 	getWindowCount(): number;
@@ -62,12 +62,26 @@ export interface IWindowsCountChangedEvent {
 }
 
 export const enum OpenContext {
+
+	// opening when running from the command line
 	CLI,
+
+	// macOS only: opening from the dock (also when opening files to a running instance from desktop)
 	DOCK,
+
+	// opening from the main application window
 	MENU,
+
+	// opening from a file or folder dialog
 	DIALOG,
+
+	// opening from the OS's UI
 	DESKTOP,
+
+	// opening through the API
 	API,
+
+	// opening from a protocol link
 	LINK
 }
 
@@ -119,41 +133,46 @@ export function defaultBrowserWindowOptions(accessor: ServicesAccessor, windowSt
 
 	const windowSettings = configurationService.getValue<IWindowSettings | undefined>('window');
 
-	const options: electron.BrowserWindowConstructorOptions & { experimentalDarkMode: boolean } = {
-		// backgroundColor: enableBlur ? getTransparentThemeColor() : themeMainService.getBackgroundColor().toString(),
+	const options: electron.BrowserWindowConstructorOptions & { experimentalDarkMode: boolean; accentColor?: boolean | string } = {
+		backgroundColor: themeMainService.getBackgroundColor(),
 		minWidth: WindowMinimumSize.WIDTH,
 		minHeight: WindowMinimumSize.HEIGHT,
 		title: productService.nameLong,
-		// show: windowState.mode !== WindowMode.Maximized && windowState.mode !== WindowMode.Fullscreen, // reduce flicker by showing later
+		show: windowState.mode !== WindowMode.Maximized && windowState.mode !== WindowMode.Fullscreen, // reduce flicker by showing later
 		x: windowState.x,
 		y: windowState.y,
 		width: windowState.width,
 		height: windowState.height,
-		center: true,
-		backgroundColor: '#00000000',
-		//  show: false,
-		//	autoHideMenuBar: true,
 		webPreferences: {
 			...webPreferences,
 			enableWebSQL: false,
 			spellcheck: false,
-			nodeIntegration: true,
-			contextIsolation: false, // we use node integration
-			sandbox: false, // we use node integration
-			webSecurity: false,
-			allowRunningInsecureContent: true,
 			zoomFactor: zoomLevelToZoomFactor(windowState.zoomLevel ?? windowSettings?.zoomLevel),
-			autoplayPolicy: 'no-user-gesture-required',
+			autoplayPolicy: 'user-gesture-required',
 			// Enable experimental css highlight api https://chromestatus.com/feature/5436441440026624
 			// Refs https://github.com/microsoft/vscode/issues/140098
 			enableBlinkFeatures: 'HighlightAPI',
-			//sandbox: true,
+			sandbox: true,
 			// TODO(deepak1556): Should be removed once migration is complete
 			// https://github.com/microsoft/vscode/issues/239228
 			enableDeprecatedPaste: true,
 		},
-		experimentalDarkMode: false
+		experimentalDarkMode: true
 	};
+
+	if (isWindows) {
+		let borderSetting = windowSettings?.border || 'default';
+		if (borderSetting === 'system') {
+			borderSetting = 'default';
+		}
+		if (borderSetting !== 'default') {
+			if (borderSetting === 'off') {
+				options.accentColor = false;
+			} else if (typeof borderSetting === 'string') {
+				options.accentColor = borderSetting;
+			}
+		}
+	}
 
 	if (isLinux) {
 		options.icon = join(environmentMainService.appRoot, 'resources/linux/code.png'); // always on Linux
@@ -177,7 +196,7 @@ export function defaultBrowserWindowOptions(accessor: ServicesAccessor, windowSt
 
 	const useNativeTabs = isMacintosh && windowSettings?.nativeTabs === true;
 	if (useNativeTabs) {
-		options.tabbingIdentifier = productService.nameShort; // this opts in to sierra tabs
+		options.tabbingIdentifier = productService.nameShort; // this opts in to native macOS tabs
 	}
 
 	const hideNativeTitleBar = !hasNativeTitlebar(configurationService, overrides?.forceNativeTitlebar ? TitlebarStyle.NATIVE : undefined);

@@ -210,43 +210,11 @@ export interface IWindowSettings {
 	readonly clickThroughInactive: boolean;
 	readonly newWindowProfile: string;
 	readonly density: IDensitySettings;
-	readonly blur?: IBlurSettings;
+	readonly border: 'off' | 'default' | 'system' | string /* color in RGB or other formats */;
 }
 
 export interface IDensitySettings {
 	readonly editorTabHeight: 'default' | 'compact';
-}
-
-export const enum WindowsMaterial {
-	NONE = 'none',
-	AUTO = 'auto',
-	MICA = 'mica',
-	ACRYLIC = 'acrylic',
-	TABBED = 'tabbed'
-}
-
-export const enum MacOSVibrancy {
-	TITLEBAR = 'titlebar',
-	SELECTION = 'selection',
-	MENU = 'menu',
-	POPOVER = 'popover',
-	SIDEBAR = 'sidebar',
-	HEADER = 'header',
-	SHEET = 'sheet',
-	WINDOW = 'window',
-	HUD = 'hud',
-	FULLSCREEN_UI = 'fullscreen-ui',
-	TOOLTIP = 'tooltip',
-	CONTENT = 'content',
-	UNDER_WINDOW = 'under-window',
-	UNDER_PAGE = 'under-page'
-}
-
-export interface IBlurSettings {
-	readonly enabled: boolean;
-	readonly radius: number;
-	readonly macOSVibrancy: MacOSVibrancy;
-	readonly windowsMaterial: WindowsMaterial;
 }
 
 export const enum TitleBarSetting {
@@ -294,7 +262,7 @@ export function getTitleBarStyle(configurationService: IConfigurationService): T
 	if (configuration) {
 		const useNativeTabs = isMacintosh && configuration.nativeTabs === true;
 		if (useNativeTabs) {
-			return TitlebarStyle.NATIVE; // native tabs on sierra do not work with custom title style
+			return TitlebarStyle.NATIVE; // native tabs on macOS do not work with custom title style
 		}
 
 		const useSimpleFullScreen = isMacintosh && configuration.nativeFullScreen === false;
@@ -427,7 +395,7 @@ export interface INativeOpenFileRequest extends IOpenFileRequest {
 export interface INativeRunActionInWindowRequest {
 	readonly id: string;
 	readonly from: 'menu' | 'touchbar' | 'mouse';
-	readonly args?: any[];
+	readonly args?: unknown[];
 }
 
 export interface INativeRunKeybindingInWindowRequest {
@@ -503,8 +471,9 @@ export interface INativeWindowConfiguration extends IWindowConfiguration, Native
  * https://github.com/electron/electron/blob/master/docs/api/web-contents.md#contentssetzoomlevellevel
  */
 export function zoomLevelToZoomFactor(zoomLevel = 0): number {
-	return Math.pow(1.2, zoomLevel);
+	return 1.2 ** zoomLevel;
 }
 
-export const DEFAULT_WINDOW_SIZE = { width: 1200, height: 800 } as const;
+export const DEFAULT_EMPTY_WINDOW_SIZE = { width: 1200, height: 800 } as const;
+export const DEFAULT_WORKSPACE_WINDOW_SIZE = { width: 1440, height: 900 } as const;
 export const DEFAULT_AUX_WINDOW_SIZE = { width: 1024, height: 768 } as const;

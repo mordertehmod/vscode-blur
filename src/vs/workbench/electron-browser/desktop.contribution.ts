@@ -9,8 +9,8 @@ import { MenuRegistry, MenuId, registerAction2 } from '../../platform/actions/co
 import { IConfigurationRegistry, Extensions as ConfigurationExtensions, ConfigurationScope } from '../../platform/configuration/common/configurationRegistry.js';
 import { KeyMod, KeyCode } from '../../base/common/keyCodes.js';
 import { isLinux, isMacintosh, isWindows } from '../../base/common/platform.js';
-import { ConfigureRuntimeArgumentsAction, ToggleDevToolsAction, ReloadWindowWithExtensionsDisabledAction, OpenUserDataFolderAction, ShowGPUInfoAction, StopTracing } from './actions/developerActions.js';
-import { ZoomResetAction, ZoomOutAction, ZoomInAction, CloseWindowAction, SwitchWindowAction, QuickSwitchWindowAction, NewWindowTabHandler, ShowPreviousWindowTabHandler, ShowNextWindowTabHandler, MoveWindowTabToNewWindowHandler, MergeWindowTabsHandlerHandler, ToggleWindowTabsBarHandler, ToggleWindowAlwaysOnTopAction, DisableWindowAlwaysOnTopAction, EnableWindowAlwaysOnTopAction } from './actions/windowActions.js';
+import { ConfigureRuntimeArgumentsAction, ToggleDevToolsAction, ReloadWindowWithExtensionsDisabledAction, OpenUserDataFolderAction, ShowGPUInfoAction, ShowContentTracingAction, StopTracing } from './actions/developerActions.js';
+import { ZoomResetAction, ZoomOutAction, ZoomInAction, CloseWindowAction, SwitchWindowAction, QuickSwitchWindowAction, NewWindowTabHandler, ShowPreviousWindowTabHandler, ShowNextWindowTabHandler, MoveWindowTabToNewWindowHandler, MergeWindowTabsHandlerHandler, ToggleWindowTabsBarHandler, ToggleWindowAlwaysOnTopAction, DisableWindowAlwaysOnTopAction, EnableWindowAlwaysOnTopAction, CloseOtherWindowsAction } from './actions/windowActions.js';
 import { ContextKeyExpr } from '../../platform/contextkey/common/contextkey.js';
 import { KeybindingsRegistry, KeybindingWeight } from '../../platform/keybinding/common/keybindingsRegistry.js';
 import { CommandsRegistry } from '../../platform/commands/common/commands.js';
@@ -28,8 +28,6 @@ import { NativeWindow } from './window.js';
 import { ModifierKeyEmitter } from '../../base/browser/dom.js';
 import { applicationConfigurationNodeBase, securityConfigurationNodeBase } from '../common/configuration.js';
 import { MAX_ZOOM_LEVEL, MIN_ZOOM_LEVEL } from '../../platform/window/electron-browser/window.js';
-import { DefaultAccountManagementContribution } from '../services/accounts/common/defaultAccount.js';
-import { registerWorkbenchContribution2, WorkbenchPhase } from '../common/contributions.js';
 
 // Actions
 (function registerActions(): void {
@@ -43,6 +41,7 @@ import { registerWorkbenchContribution2, WorkbenchPhase } from '../common/contri
 	registerAction2(SwitchWindowAction);
 	registerAction2(QuickSwitchWindowAction);
 	registerAction2(CloseWindowAction);
+	registerAction2(CloseOtherWindowsAction);
 	registerAction2(ToggleWindowAlwaysOnTopAction);
 	registerAction2(EnableWindowAlwaysOnTopAction);
 	registerAction2(DisableWindowAlwaysOnTopAction);
@@ -114,6 +113,7 @@ import { registerWorkbenchContribution2, WorkbenchPhase } from '../common/contri
 	registerAction2(ToggleDevToolsAction);
 	registerAction2(OpenUserDataFolderAction);
 	registerAction2(ShowGPUInfoAction);
+	registerAction2(ShowContentTracingAction);
 	registerAction2(StopTracing);
 })();
 
@@ -145,6 +145,7 @@ import { registerWorkbenchContribution2, WorkbenchPhase } from '../common/contri
 				'default': 10,
 				'minimum': 1,
 				'maximum': 120,
+				'included': !isWindows,
 				'scope': ConfigurationScope.APPLICATION,
 				'markdownDescription': localize('application.shellEnvironmentResolutionTimeout', "Controls the timeout in seconds before giving up resolving the shell environment when the application is not already launched from a terminal. See our [documentation](https://go.microsoft.com/fwlink/?linkid=2149667) for more information.")
 			}
@@ -292,7 +293,7 @@ import { registerWorkbenchContribution2, WorkbenchPhase } from '../common/contri
 				'type': 'boolean',
 				'default': false,
 				'scope': ConfigurationScope.APPLICATION,
-				'description': localize('window.nativeTabs', "Enables macOS Sierra window tabs. Note that changes require a full restart to apply and that native tabs will disable a custom title bar style if configured."),
+				'description': localize('window.nativeTabs', "Enables macOS native window tabs. Note that changes require a full restart to apply and that native tabs will disable a custom title bar style if configured."),
 				'included': isMacintosh,
 			},
 			'window.nativeFullScreen': {
@@ -309,62 +310,22 @@ import { registerWorkbenchContribution2, WorkbenchPhase } from '../common/contri
 				'description': localize('window.clickThroughInactive', "If enabled, clicking on an inactive window will both activate the window and trigger the element under the mouse if it is clickable. If disabled, clicking anywhere on an inactive window will activate it only and a second click is required on the element."),
 				'included': isMacintosh
 			},
-			'window.blur.enabled': {
-				'type': 'boolean',
-				'default': false,
-				'scope': ConfigurationScope.APPLICATION,
-				'description': localize('window.blur.enabled', "Enable window blur/transparency effects. Changes require a full restart to apply."),
-				'order': 20
-			},
-			'window.blur.radius': {
-				'type': 'number',
-				'default': 10,
-				'minimum': 5,
-				'maximum': 50,
-				'scope': ConfigurationScope.APPLICATION,
-				'description': localize('window.blur.radius', "Controls the blur radius in pixels for CSS backdrop-filter on systems that don't support native blur. Changes require a restart."),
-				'order': 21
-			},
-			'window.blur.windowsMaterial': {
+			'window.border': {
 				'type': 'string',
-				'enum': ['none', 'auto', 'mica', 'acrylic', 'tabbed'],
-				'enumDescriptions': [
-					localize('window.blur.windowsMaterial.none', "Disable native Windows blur effects and use CSS backdrop-filter instead"),
-					localize('window.blur.windowsMaterial.auto', "Let Windows choose the appropriate material"),
-					localize('window.blur.windowsMaterial.mica', "Use Windows 11 Mica material effect"),
-					localize('window.blur.windowsMaterial.acrylic', "Use Windows 11 Acrylic material effect"),
-					localize('window.blur.windowsMaterial.tabbed', "Use Windows 11 Tabbed material effect")
-				],
-				'default': 'mica',
-				'scope': ConfigurationScope.APPLICATION,
-				'description': localize('window.blur.windowsMaterial', "Controls the background material effect on Windows when blur is enabled. Changes require a restart."),
-				'included': isWindows,
-				'order': 22
-			},
-			'window.blur.macOSVibrancy': {
-				'type': 'string',
-				'enum': ['titlebar', 'selection', 'menu', 'popover', 'sidebar', 'header', 'sheet', 'window', 'hud', 'fullscreen-ui', 'tooltip', 'content', 'under-window', 'under-page'],
-				'enumDescriptions': [
-					localize('window.blur.macOSVibrancy.titlebar', "Titlebar vibrancy effect"),
-					localize('window.blur.macOSVibrancy.selection', "Selection vibrancy effect"),
-					localize('window.blur.macOSVibrancy.menu', "Menu vibrancy effect"),
-					localize('window.blur.macOSVibrancy.popover', "Popover vibrancy effect"),
-					localize('window.blur.macOSVibrancy.sidebar', "Sidebar vibrancy effect"),
-					localize('window.blur.macOSVibrancy.header', "Header vibrancy effect"),
-					localize('window.blur.macOSVibrancy.sheet', "Sheet vibrancy effect"),
-					localize('window.blur.macOSVibrancy.window', "Window vibrancy effect"),
-					localize('window.blur.macOSVibrancy.hud', "HUD vibrancy effect"),
-					localize('window.blur.macOSVibrancy.fullscreen-ui', "Fullscreen UI vibrancy effect"),
-					localize('window.blur.macOSVibrancy.tooltip', "Tooltip vibrancy effect"),
-					localize('window.blur.macOSVibrancy.content', "Content vibrancy effect"),
-					localize('window.blur.macOSVibrancy.under-window', "Under window vibrancy effect"),
-					localize('window.blur.macOSVibrancy.under-page', "Under page vibrancy effect")
-				],
-				'default': 'sidebar',
-				'scope': ConfigurationScope.APPLICATION,
-				'description': localize('window.blur.macOSVibrancy', "Controls the vibrancy effect on macOS when blur is enabled. Changes require a restart."),
-				'included': isMacintosh,
-				'order': 23
+				'default': 'default',
+				'markdownDescription': (() => {
+					let windowBorderDescription = localize('window.border.prefix', "Controls the border color of the window:");
+					windowBorderDescription += '\n- ' + [
+						localize('window.border.default', "{0}: respect color theme settings, fallback to Windows settings", '`default`'),
+						localize('window.border.system', "{0}: respect Windows settings only", '`system`'),
+						localize('window.border.off', "{0}: disable border colors", '`off`'),
+						localize('window.border.color', "{0}: specific color in Hex, RGB, RGBA, HSL, HSLA format", '`<color>`'),
+					].join('\n- ');
+					windowBorderDescription += '\n\n' + localize('window.border.suffix', "Use {0} to set different colors for active and inactive windows. This setting is ignored when {1} is set to {2}.", '`#workbench.colorCustomizations#`', '`#window.titleBarStyle#`', '`native`');
+
+					return windowBorderDescription;
+				})(),
+				'included': isWindows
 			}
 		}
 	});
@@ -489,6 +450,10 @@ import { registerWorkbenchContribution2, WorkbenchPhase } from '../common/contri
 			'use-inmemory-secretstorage': {
 				type: 'boolean',
 				description: localize('argv.useInMemorySecretStorage', "Ensures that an in-memory store will be used for secret storage instead of using the OS's credential store. This is often used when running VS Code extension tests or when you're experiencing difficulties with the credential store.")
+			},
+			'remote-debugging-port': {
+				type: 'string',
+				description: localize('argv.remoteDebuggingPort', "Specifies the port to use for remote debugging.")
 			}
 		}
 	};
@@ -510,8 +475,4 @@ import { registerWorkbenchContribution2, WorkbenchPhase } from '../common/contri
 	}
 
 	jsonRegistry.registerSchema(argvDefinitionFileSchemaId, schema);
-})();
-
-(function registerWorkbenchContributions(): void {
-	registerWorkbenchContribution2('workbench.contributions.defaultAccountManagement', DefaultAccountManagementContribution, WorkbenchPhase.AfterRestored);
 })();

@@ -7,6 +7,9 @@ import { IPosition } from './core/position.js';
 import { IRange, Range } from './core/range.js';
 import { Selection } from './core/selection.js';
 import { IModelDecoration, InjectedTextOptions } from './model.js';
+import { IModelContentChange } from './model/mirrorTextModel.js';
+import { AnnotationsUpdate } from './model/tokens/annotations.js';
+import { TextModelEditSource } from './textModelEditSource.js';
 
 /**
  * An event describing that the current language associated with a model has changed.
@@ -31,25 +34,6 @@ export interface IModelLanguageChangedEvent {
  * An event describing that the language configuration associated with a model has changed.
  */
 export interface IModelLanguageConfigurationChangedEvent {
-}
-
-export interface IModelContentChange {
-	/**
-	 * The old range that got replaced.
-	 */
-	readonly range: IRange;
-	/**
-	 * The offset of the range that got replaced.
-	 */
-	readonly rangeOffset: number;
-	/**
-	 * The length of the range that got replaced.
-	 */
-	readonly rangeLength: number;
-	/**
-	 * The new text for the range.
-	 */
-	readonly text: string;
 }
 
 /**
@@ -86,6 +70,57 @@ export interface IModelContentChangedEvent {
 	 * Flag that indicates that this event describes an eol change.
 	 */
 	readonly isEolChange: boolean;
+
+	/**
+	 * Detailed reason information for the change
+	 * @internal
+	 */
+	readonly detailedReasons: TextModelEditSource[];
+
+	/**
+	 * The sum of these lengths equals changes.length.
+	 * The length of this array must equal the length of detailedReasons.
+	*/
+	readonly detailedReasonsChangeLengths: number[];
+}
+
+export interface ISerializedModelContentChangedEvent {
+	/**
+	 * The changes are ordered from the end of the document to the beginning, so they should be safe to apply in sequence.
+	 */
+	readonly changes: IModelContentChange[];
+	/**
+	 * The (new) end-of-line character.
+	 */
+	readonly eol: string;
+	/**
+	 * The new version id the model has transitioned to.
+	 */
+	readonly versionId: number;
+	/**
+	 * Flag that indicates that this event was generated while undoing.
+	 */
+	readonly isUndoing: boolean;
+	/**
+	 * Flag that indicates that this event was generated while redoing.
+	 */
+	readonly isRedoing: boolean;
+	/**
+	 * Flag that indicates that all decorations were lost with this edit.
+	 * The model has been reset to a new value.
+	 */
+	readonly isFlush: boolean;
+
+	/**
+	 * Flag that indicates that this event describes an eol change.
+	 */
+	readonly isEolChange: boolean;
+
+	/**
+	 * Detailed reason information for the change
+	 * @internal
+	 */
+	readonly detailedReason: Record<string, unknown> | undefined;
 }
 
 /**
@@ -114,6 +149,63 @@ export interface IModelTokensChangedEvent {
 		 */
 		readonly toLineNumber: number;
 	}[];
+}
+
+/**
+ * @internal
+ */
+export interface IFontTokenOption {
+	/**
+	 * Font family of the token.
+	 */
+	readonly fontFamily?: string;
+	/**
+	 * Font size of the token.
+	 */
+	readonly fontSize?: string;
+	/**
+	 * Line height of the token.
+	 */
+	readonly lineHeight?: number;
+}
+
+/**
+ * An event describing a token font change event
+ * @internal
+ */
+export interface IModelFontTokensChangedEvent {
+	changes: FontTokensUpdate;
+}
+
+/**
+ * @internal
+ */
+export type FontTokensUpdate = AnnotationsUpdate<IFontTokenOption | undefined>;
+
+/**
+ * @internal
+ */
+export function serializeFontTokenOptions(): (options: IFontTokenOption) => IFontTokenOption {
+	return (annotation: IFontTokenOption) => {
+		return {
+			fontFamily: annotation.fontFamily ?? '',
+			fontSize: annotation.fontSize ?? '',
+			lineHeight: annotation.lineHeight ?? 0
+		};
+	};
+}
+
+/**
+ * @internal
+ */
+export function deserializeFontTokenOptions(): (options: IFontTokenOption) => IFontTokenOption {
+	return (annotation: IFontTokenOption) => {
+		return {
+			fontFamily: annotation.fontFamily ? String(annotation.fontFamily) : undefined,
+			fontSize: annotation.fontSize ? String(annotation.fontSize) : undefined,
+			lineHeight: annotation.lineHeight ? Number(annotation.lineHeight) : undefined
+		};
+	};
 }
 
 export interface IModelOptionsChangedEvent {
@@ -263,6 +355,26 @@ export class ModelLineHeightChanged {
 		this.decorationId = decorationId;
 		this.lineNumber = lineNumber;
 		this.lineHeight = lineHeight;
+	}
+}
+
+/**
+ * An event describing that a line height has changed in the model.
+ * @internal
+ */
+export class ModelFontChanged {
+	/**
+	 * Editor owner ID
+	 */
+	public readonly ownerId: number;
+	/**
+	 * The line that has changed.
+	 */
+	public readonly lineNumber: number;
+
+	constructor(ownerId: number, lineNumber: number) {
+		this.ownerId = ownerId;
+		this.lineNumber = lineNumber;
 	}
 }
 
@@ -425,6 +537,19 @@ export class ModelLineHeightChangedEvent {
 }
 
 /**
+ * An event describing a change in fonts.
+ * @internal
+ */
+export class ModelFontChangedEvent {
+
+	public readonly changes: ModelFontChanged[];
+
+	constructor(changes: ModelFontChanged[]) {
+		this.changes = changes;
+	}
+}
+
+/**
  * @internal
  */
 export class InternalModelContentChangeEvent {
@@ -455,6 +580,8 @@ export class InternalModelContentChangeEvent {
 			isUndoing: isUndoing,
 			isRedoing: isRedoing,
 			isFlush: isFlush,
+			detailedReasons: a.detailedReasons.concat(b.detailedReasons),
+			detailedReasonsChangeLengths: a.detailedReasonsChangeLengths.concat(b.detailedReasonsChangeLengths),
 		};
 	}
 }
