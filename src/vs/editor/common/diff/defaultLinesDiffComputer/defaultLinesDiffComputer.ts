@@ -47,6 +47,35 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 		const timeout = options.maxComputationTimeMs === 0 ? InfiniteTimeout.instance : new DateTimeout(options.maxComputationTimeMs);
 		const considerWhitespaceChanges = !options.ignoreTrimWhitespace;
 
+		// Compile regex patterns for line ignoring
+		const compiledPatterns: RegExp[] = [];
+		if (options.ignoreLinePatterns && options.ignoreLinePatterns.length > 0) {
+			for (const pattern of options.ignoreLinePatterns) {
+				try {
+					// Compile with Unicode support for better international character handling
+					compiledPatterns.push(new RegExp(pattern, 'u'));
+				} catch (e) {
+					// Silently ignore invalid patterns - don't break diff computation
+				}
+			}
+		}
+
+		/**
+		 * Normalizes a line by replacing it with a canonical value if it matches any ignore pattern.
+		 * This ensures lines matching the same pattern get the same hash.
+		 */
+		function normalizeLine(line: string): string {
+			const trimmedLine = line.trim();
+			for (let i = 0; i < compiledPatterns.length; i++) {
+				if (compiledPatterns[i].test(trimmedLine)) {
+					// Return a canonical marker that includes the pattern index
+					// This ensures lines matching DIFFERENT patterns don't collide
+					return `__IGNORED_PATTERN_${i}__`;
+				}
+			}
+			return trimmedLine;
+		}
+
 		const perfectHashes = new Map<string, number>();
 		function getOrCreateHash(text: string): number {
 			let hash = perfectHashes.get(text);
@@ -57,8 +86,8 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 			return hash;
 		}
 
-		const originalLinesHashes = originalLines.map((l) => getOrCreateHash(l.trim()));
-		const modifiedLinesHashes = modifiedLines.map((l) => getOrCreateHash(l.trim()));
+		const originalLinesHashes = originalLines.map((l) => getOrCreateHash(normalizeLine(l)));
+		const modifiedLinesHashes = modifiedLines.map((l) => getOrCreateHash(normalizeLine(l)));
 
 		const sequence1 = new LineSequence(originalLinesHashes, originalLines);
 		const sequence2 = new LineSequence(modifiedLinesHashes, modifiedLines);

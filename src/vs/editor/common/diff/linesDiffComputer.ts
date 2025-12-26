@@ -14,6 +14,7 @@ export interface ILinesDiffComputerOptions {
 	readonly maxComputationTimeMs: number;
 	readonly computeMoves: boolean;
 	readonly extendToSubwords?: boolean;
+	readonly ignoreLinePatterns?: readonly string[];
 }
 
 export class LinesDiff {

@@ -301,6 +301,14 @@ const editorConfiguration: IConfigurationNode = {
 			default: diffEditorDefaultOptions.experimental.useTrueInlineView,
 			description: nls.localize('useTrueInlineView', "If enabled and the editor uses the inline view, word changes are rendered inline."),
 		},
+		'diffEditor.ignoreLinePatterns': {
+			type: 'array',
+			items: {
+				type: 'string'
+			},
+			default: diffEditorDefaultOptions.ignoreLinePatterns,
+			markdownDescription: nls.localize('ignoreLinePatterns', "Regular expression patterns for lines to ignore when computing diffs. Lines matching any pattern are treated as equal even if their content differs. Use this to ignore lines with dynamic content like timestamps or auto-generated IDs.")
+		},
 	}
 };
 

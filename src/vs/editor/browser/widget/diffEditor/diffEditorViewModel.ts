@@ -294,6 +294,7 @@ export class DiffEditorViewModel extends Disposable implements IDiffEditorViewMo
 				ignoreTrimWhitespace: this._options.ignoreTrimWhitespace.read(reader),
 				maxComputationTimeMs: this._options.maxComputationTimeMs.read(reader),
 				computeMoves: this._options.showMoves.read(reader),
+				ignoreLinePatterns: this._options.ignoreLinePatterns.read(reader),
 			}, this._cancellationTokenSource.token);
 
 			if (this._cancellationTokenSource.token.isCancellationRequested) {

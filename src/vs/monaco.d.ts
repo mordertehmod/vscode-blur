@@ -4102,6 +4102,13 @@ declare namespace monaco.editor {
 			minimumLineCount?: number;
 			contextLineCount?: number;
 		};
+		/**
+		 * Regular expression patterns for lines to ignore when computing diffs.
+		 * Lines matching any pattern are treated as equal even if their content differs.
+		 * Invalid regex patterns are silently ignored.
+		 * Defaults to [].
+		 */
+		ignoreLinePatterns?: readonly string[];
 	}
 
 	/**

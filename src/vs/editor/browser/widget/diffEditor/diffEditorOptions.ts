@@ -65,6 +65,7 @@ export class DiffEditorOptions {
 		this.showEmptyDecorations = derived(this, reader => this._options.read(reader).experimental.showEmptyDecorations!);
 		this.onlyShowAccessibleDiffViewer = derived(this, reader => this._options.read(reader).onlyShowAccessibleDiffViewer);
 		this.compactMode = derived(this, reader => this._options.read(reader).compactMode);
+		this.ignoreLinePatterns = derived(this, reader => this._options.read(reader).ignoreLinePatterns ?? []);
 		this.trueInlineDiffRenderingEnabled = derived(this, reader =>
 			this._options.read(reader).experimental.useTrueInlineView!
 		);
@@ -112,6 +113,7 @@ export class DiffEditorOptions {
 	public readonly showEmptyDecorations;
 	public readonly onlyShowAccessibleDiffViewer;
 	public readonly compactMode;
+	public readonly ignoreLinePatterns: IObservable<readonly string[]>;
 	private readonly trueInlineDiffRenderingEnabled: IObservable<boolean>;
 
 	public readonly useTrueInlineDiffRendering: IObservable<boolean>;
@@ -188,5 +190,6 @@ function validateDiffEditorOptions(options: Readonly<IDiffEditorOptions>, defaul
 		useInlineViewWhenSpaceIsLimited: validateBooleanOption(options.useInlineViewWhenSpaceIsLimited, defaults.useInlineViewWhenSpaceIsLimited),
 		renderGutterMenu: validateBooleanOption(options.renderGutterMenu, defaults.renderGutterMenu),
 		compactMode: validateBooleanOption(options.compactMode, defaults.compactMode),
+		ignoreLinePatterns: Array.isArray(options.ignoreLinePatterns) ? [...options.ignoreLinePatterns] : defaults.ignoreLinePatterns,
 	};
 }

@@ -47,6 +47,8 @@ export interface IDocumentDiffProviderOptions {
 	computeMoves: boolean;
 
 	extendToSubwords?: boolean;
+
+	ignoreLinePatterns?: readonly string[];
 }
 
 /**
